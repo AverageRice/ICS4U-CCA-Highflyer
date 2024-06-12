@@ -135,7 +135,11 @@ class Plane(pygame.sprite.Sprite):
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
-        raise NotImplementedError
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('star.png')
+        self.image = pygame.transform.scale(self.image(15,15))
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+
     def update(self):
         raise NotImplementedError
 
@@ -147,7 +151,9 @@ class Booster(pygame.sprite.Sprite):
     
 class Fuel(pygame.sprite.Sprite):
     def __init__(self):
-        raise NotImplementedError
+        self.image = pygame.image.load('fuel.png')
+        self.image = pygame.transform.scale(self.image(10,10))
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
     def update(self):
         raise NotImplementedError
     
@@ -168,7 +174,7 @@ class Cloud(pygame.sprite.Sprite):
 # || EVENTS ||
 
 ADD_CLOUD = pygame.USEREVENT + 12
-pygame.time.set_timer(ADD_CLOUD, 10000)
+pygame.time.set_timer(ADD_CLOUD, 10)
 # 2 args [what to happen, how often]
 
 # || ELEMENTS ||
@@ -251,6 +257,8 @@ while running:
     if game_running:
         all_sprites_group.update(time, keyPressed)
         all_sprites_group.draw(window)
+        cloud_group.update()
+        cloud_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
