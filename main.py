@@ -51,20 +51,30 @@ class Plane(pygame.sprite.Sprite):
         #self.image = pygame.image.load("plane.png").convert()
         self.image = pygame.Surface((25,25)) #to be replaced
         self.image.fill(WHITE) #to be replaced
-        
-        #self.rect = self.image.get_rect()
 
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
 
         self.keep_moving = True
+        self.gas = 100
+        self.velocity_x = 0
+        self.velocity_y = 0
 
-    def update(self, time):
-        velocity_x = v_x(time, self.horizontal_speed)
+        # Stats for pandas analysis
+        self.final_range = 0
+        self.max_height = 0
+        self.gas_used = 0
+
+    def update(self, time, keystatus):
+        self.velocity_x = v_x(time, self.horizontal_speed)
         if self.keep_moving:
-            self.rect.x += velocity_x
+            self.rect.x += self.velocity_x
         
-        self.rect.y += v_y(time, self.vertical_speed)
+        self.velocity_y = v_y(time, self.vertical_speed)
+        self.rect.y += self.velocity_y
+        # update max height stat
+        if self.rect.y > self.max_height:
+            self.max_height == self.rect.bottom
         
         # trump administration mexican border control
         if self.rect.right > SCREEN_WIDTH:
@@ -75,10 +85,34 @@ class Plane(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.keep_moving = False
+            # update landing range stat
+            self.final_range = self.rect.left
+            # find amt of gas used in attempt
+            self.gas_used = 100 - self.gas
+
+            # useless non working garbage code!
             # rah = v_x(time, self.horizontal_speed, True)
             # vx = rah[0]; self.keep_moving = rah[1]
             # if self.keep_moving is 0: self.keep_moving = False
             # self.rect.x += vx
+        
+        # if holding space, boost up
+        if keystatus[K_SPACE] == True: self.boost(time)
+        # if holding right arrow, speed up
+        if keystatus[K_RIGHT] == True: self.speed_up(time)
+    
+    def boost(self, time):
+        '''add some height to the plane as a userevent triggered boost'''
+        if self.gas <= 0: return
+        if not self.keep_moving: return
+        self.rect.y -= 1.6*self.velocity_y
+        self.gas -= 0.25
+    
+    def speed_up(self, time):
+        '''convert some of the plane's vertical velocity into horizontal velocity'''
+        if not self.keep_moving: return
+        self.rect.x += 1.6*self.velocity_x
+        self.rect.y += 1.6*self.velocity_y
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
@@ -102,10 +136,11 @@ class Cloud(pygame.sprite.Sprite):
     def __init__(self):
         super(Cloud, self).__init__()
         #self.surf = pygame.image.load() #still needs implementing!!
+
         self.image = pygame.Surface((10,10))
         self.image.fill(OFF_WHITE)
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH),
-                                           randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
+                        randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
         
     def update(self):
         if self.rect.left > SCREEN_WIDTH:
@@ -136,9 +171,16 @@ dt = 0
 time = 0
 while running:
     time += 1
+
+    keyPressed = pygame.key.get_pressed()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                pass
+                # main_plane.boost() # not used bc implementing keyholds in
 
         if event.type == ADD_CLOUD:
             new_cloud = Cloud()
@@ -149,13 +191,13 @@ while running:
     #RENDER YOUR GAME HERE
 
     user_input = pygame.key.get_pressed()
-    plane_group.update(time)
+    plane_group.update(time, keyPressed)
     plane_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
 
-#https://stackoverflow.com/questions/63350720/pygame-mouse-speed
+# https://stackoverflow.com/questions/63350720/pygame-mouse-speed
 
 # Clean up
 pygame.quit()
