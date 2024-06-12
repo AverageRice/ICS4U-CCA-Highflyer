@@ -237,6 +237,10 @@ while running:
         for i in range(len(upgrades_menu)):
             upgrade = font_small.render(upgrades_menu[i], True, (255, 255, 255))
             window.blit(upgrade, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+        # check for event to upgrade fuel efficiency
+        if keyPressed[K_1]:
+            main_plane.fuel_effeciency -= 0.1
+            show_upgrades_menu = False
 
     #RENDER YOUR GAME HERE
     if show_menu:
@@ -252,8 +256,6 @@ while running:
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
-
-# https://stackoverflow.com/questions/63350720/pygame-mouse-speed
 
 # Clean up
 pygame.quit()
