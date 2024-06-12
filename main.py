@@ -22,6 +22,13 @@ pygame.init()
 window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
+# basics lmao
+
+show_menu = True
+game_running = False
+first_run = True
+show_instructions = False
+
 # || CLASSES ||
 
 #functionality:
@@ -49,8 +56,10 @@ class Plane(pygame.sprite.Sprite):
         self.vertical_speed = velocity_y
 
         #self.image = pygame.image.load("plane.png").convert()
-        self.image = pygame.Surface((25,25)) #to be replaced
-        self.image.fill(WHITE) #to be replaced
+        self.image = pygame.image.load("paper_airplane.png")
+        self.image = pygame.transform.scale(self.image, (75,75))
+        # self.image = pygame.Surface((25,25)) #to be replaced
+        # self.image.fill(WHITE) #to be replaced
 
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
@@ -64,8 +73,11 @@ class Plane(pygame.sprite.Sprite):
         self.final_range = 0
         self.max_height = 0
         self.gas_used = 0
+        self.fuel_effeciency = 1.25
 
     def update(self, time, keystatus):
+        global show_menu
+
         self.velocity_x = v_x(time, self.horizontal_speed)
         if self.keep_moving:
             self.rect.x += self.velocity_x
@@ -82,9 +94,11 @@ class Plane(pygame.sprite.Sprite):
             self.keep_moving = False
         if self.rect.top < 0:
             self.rect.top = 0
+        # If game end
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.keep_moving = False
+            show_menu = True
             # update landing range stat
             self.final_range = self.rect.left
             # find amt of gas used in attempt
@@ -106,7 +120,7 @@ class Plane(pygame.sprite.Sprite):
         if self.gas <= 0: return
         if not self.keep_moving: return
         self.rect.y -= 1.6*self.velocity_y
-        self.gas -= 0.25
+        self.gas -= self.fuel_effeciency
     
     def speed_up(self, time):
         '''convert some of the plane's vertical velocity into horizontal velocity'''
@@ -156,10 +170,17 @@ pygame.time.set_timer(ADD_CLOUD, 250)
 
 # || ELEMENTS ||
 
-main_plane = Plane()
+game_instructions = ["INSTRUCTIONS", "Press [SPACE] to boost up", "Press [RIGHT ARROW] to speed up"]
 
-plane_group = pygame.sprite.Group()
-plane_group.add(main_plane)
+font = pygame.font.Font('Toyota-Type.ttf', 36)
+font_small = pygame.font.Font('Toyota-Type.ttf', 24)
+
+main_plane = Plane()
+A_Start_Game = font.render('[A] Start Game', True, (255, 255, 255))
+B_Instructions_Button = font.render('[B] Instructions', True, (255, 255, 255))
+
+all_sprites_group = pygame.sprite.Group()
+all_sprites_group.add(main_plane)
 
 cloud_group = pygame.sprite.Group()
 
@@ -178,9 +199,16 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                pass
-                # main_plane.boost() # not used bc implementing keyholds in
+            if event.key == pygame.K_a:
+                A_Start_Game = font.render('[A] Play Again', True, (255, 255, 255))
+                time = 0
+                main_plane = Plane()
+                all_sprites_group.empty()
+                all_sprites_group.add(main_plane)
+                game_running = True
+                show_menu = False
+            if event.key == pygame.K_b:
+                show_instructions = not show_instructions
 
         if event.type == ADD_CLOUD:
             new_cloud = Cloud()
@@ -188,11 +216,24 @@ while running:
 
     window.fill(SKY_BLUE)
 
-    #RENDER YOUR GAME HERE
+    # Texts to display
+    gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
+    window.blit(gas_level_indicator, (20, 420))
+    if show_instructions:
+        for i in range(len(game_instructions)):
+            instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
+            window.blit(instruction, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
 
+    #RENDER YOUR GAME HERE
+    if show_menu:
+        time -= 1
+        window.blit(A_Start_Game, (20, 10))
+        window.blit(B_Instructions_Button, (20, 50))
+    
     user_input = pygame.key.get_pressed()
-    plane_group.update(time, keyPressed)
-    plane_group.draw(window)
+    if game_running:
+        all_sprites_group.update(time, keyPressed)
+        all_sprites_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
