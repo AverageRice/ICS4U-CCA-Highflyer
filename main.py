@@ -39,7 +39,7 @@ def v_x(t, vx_o, touching_ground=False):
     #     elif final == 0:
     #         return tuple(0, 0)
     return (final)
-
+  
 class Plane(pygame.sprite.Sprite):
     def __init__ (self, velocity_x=randint(6,9), velocity_y=randint(1,4)):
         pygame.sprite.Sprite.__init__(self)
@@ -52,6 +52,7 @@ class Plane(pygame.sprite.Sprite):
         self.image.fill(WHITE) #to be replaced
         
         #self.rect = self.image.get_rect()
+
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
 
@@ -99,13 +100,14 @@ class Fuel(pygame.sprite.Sprite):
 class Cloud(pygame.sprite.Sprite):
     def __init__(self):
         super(Cloud, self).__init__()
-        self.surf = pygame.image.load() #still needs implementing!!
-        self.surf.set_colorkey()
-        self.rect = self.surf.get_rect(center = ())
-        # self.speed = 
-
-        raise NotImplementedError
+        #self.surf = pygame.image.load() #still needs implementing!!
+        self.surf.set_colorkey(WHITE, RLEACCEL)
+        self.rect = self.surf.get_rect(center = (SCREEN_WIDTH,
+                                           random.randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
+        
     def update(self):
+        #only remove once they move off-screen TO THE LEFT!!!
+
         raise NotImplementedError
 
 # || ELEMENTS ||
