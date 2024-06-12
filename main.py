@@ -2,6 +2,7 @@
 
 import pygame, sys
 from pygame.locals import *
+import random
 
 # || CONSTANTS ||
 
@@ -27,9 +28,6 @@ clock = pygame.time.Clock()
 #functionality:
 #mathematics determine position of paper airplane after thrown
 
-def distance(velocity_x,time):
-    
-
 class Plane(pygame.sprite.Sprite):
     def __init__ (self, velocity_x, velocity_y):
         #SPEEDS
@@ -44,11 +42,9 @@ class Plane(pygame.sprite.Sprite):
         self.rect = self.surface.get_rect()
         self.rect.center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         
-        position_x = distance(velocity_x,)
-        position_x = self.horizontal_speed*time #need to begin tracking time immediatley after plane is thrown.
-        position_y = 
-
-        return position_x
+        #position_x = distance(velocity_x,)
+        #position_x = self.horizontal_speed*time #need to begin tracking time immediatley after plane is thrown.
+        #position_y = 
 
     def update(self):
         if user_input[K_SPACE]:
@@ -77,13 +73,14 @@ class Fuel(pygame.sprite.Sprite):
 class Cloud(pygame.sprite.Sprite):
     def __init__(self):
         super(Cloud, self).__init__()
-        self.surf = pygame.image.load() #still needs implementing!!
-        self.surf.set_colorkey()
-        self.rect = self.surf.get_rect(center = ())
-        # self.speed = 
-
-        raise NotImplementedError
+        #self.surf = pygame.image.load() #still needs implementing!!
+        self.surf.set_colorkey(WHITE, RLEACCEL)
+        self.rect = self.surf.get_rect(center = (SCREEN_WIDTH,
+                                           random.randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
+        
     def update(self):
+        #only remove once they move off-screen TO THE LEFT!!!
+
         raise NotImplementedError
 
 # || ELEMENTS ||
