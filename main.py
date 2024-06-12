@@ -59,6 +59,11 @@ class Plane(pygame.sprite.Sprite):
         self.velocity_x = 0
         self.velocity_y = 0
 
+        # Stats for pandas analysis
+        self.final_range = 0
+        self.max_height = 0
+        self.gas_used = 0
+
     def update(self, time, keystatus):
         self.velocity_x = v_x(time, self.horizontal_speed)
         if self.keep_moving:
@@ -66,6 +71,9 @@ class Plane(pygame.sprite.Sprite):
         
         self.velocity_y = v_y(time, self.vertical_speed)
         self.rect.y += self.velocity_y
+        # update max height stat
+        if self.rect.y > self.max_height:
+            self.max_height == self.rect.bottom
         
         # trump administration mexican border control
         if self.rect.right > SCREEN_WIDTH:
@@ -76,6 +84,12 @@ class Plane(pygame.sprite.Sprite):
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.keep_moving = False
+            # update landing range stat
+            self.final_range = self.rect.left
+            # find amt of gas used in attempt
+            self.gas_used = 100 - self.gas
+
+            # useless non working garbage code!
             # rah = v_x(time, self.horizontal_speed, True)
             # vx = rah[0]; self.keep_moving = rah[1]
             # if self.keep_moving is 0: self.keep_moving = False
@@ -127,7 +141,6 @@ class Cloud(pygame.sprite.Sprite):
         
     def update(self):
         #only remove once they move off-screen TO THE LEFT!!!
-
         raise NotImplementedError
 
 # || ELEMENTS ||
@@ -141,7 +154,6 @@ plane_group.add(main_plane)
 
 running = True
 dt = 0
-
 
 time = 0
 while running:
