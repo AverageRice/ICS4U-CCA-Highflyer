@@ -13,6 +13,7 @@ FPS = 30
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 SKY_BLUE = (135, 206, 235)
+OFF_WHITE = (196, 196, 196)
 
 # || PYGAME SETUP ||
 
@@ -135,13 +136,23 @@ class Cloud(pygame.sprite.Sprite):
     def __init__(self):
         super(Cloud, self).__init__()
         #self.surf = pygame.image.load() #still needs implementing!!
-        self.surf.set_colorkey(WHITE, RLEACCEL)
-        self.rect = self.surf.get_rect(center = (SCREEN_WIDTH,
-                                           randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
+
+        self.image = pygame.Surface((10,10))
+        self.image.fill(OFF_WHITE)
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH),
+                        randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
         
     def update(self):
+        if self.rect.left > SCREEN_WIDTH:
+            self.kill
+
         #only remove once they move off-screen TO THE LEFT!!!
-        raise NotImplementedError
+
+# || EVENTS ||
+
+ADD_CLOUD = pygame.USEREVENT + 1
+pygame.time.set_timer(ADD_CLOUD, 250)
+# 2 args [what to happen, how often]
 
 # || ELEMENTS ||
 
@@ -149,6 +160,8 @@ main_plane = Plane()
 
 plane_group = pygame.sprite.Group()
 plane_group.add(main_plane)
+
+cloud_group = pygame.sprite.Group()
 
 # || GAME WINDOW ||
 
@@ -168,6 +181,10 @@ while running:
             if event.key == pygame.K_SPACE:
                 pass
                 # main_plane.boost() # not used bc implementing keyholds in
+
+        if event.type == ADD_CLOUD:
+            new_cloud = Cloud()
+            cloud_group.add(new_cloud)
 
     window.fill(SKY_BLUE)
 
