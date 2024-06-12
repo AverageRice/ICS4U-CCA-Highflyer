@@ -153,24 +153,22 @@ class Fuel(pygame.sprite.Sprite):
     
 class Cloud(pygame.sprite.Sprite):
     def __init__(self):
-        super(Cloud, self).__init__()
-        #self.surf = pygame.image.load() #still needs implementing!!
-
-        self.image = pygame.Surface((10,10))
-        self.image.fill(OFF_WHITE)
-        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH),
-                        randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('cloud_medium.png')
+        self.image = pygame.transform.scale(self.image, (25,25))
+        #self.image.fill(OFF_WHITE)
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
         
     def update(self):
-        if self.rect.left > SCREEN_WIDTH:
-            self.kill
-
+        pass
+        #if self.rect.left > SCREEN_WIDTH:
+            #self.kill
         #only remove once they move off-screen TO THE LEFT!!!
 
 # || EVENTS ||
 
-ADD_CLOUD = pygame.USEREVENT + 1
-pygame.time.set_timer(ADD_CLOUD, 250)
+ADD_CLOUD = pygame.USEREVENT + 12
+pygame.time.set_timer(ADD_CLOUD, 10000)
 # 2 args [what to happen, how often]
 
 # || ELEMENTS ||
