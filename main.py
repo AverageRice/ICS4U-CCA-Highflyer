@@ -28,6 +28,11 @@ show_menu = True
 game_running = False
 first_run = True
 show_instructions = False
+show_upgrades_menu = False
+
+# stat management
+
+main_db = [] # contains player list containers. Each player container as follows: [max_range, max_height, gas_used, fuel_effeciency]
 
 # || CLASSES ||
 
@@ -171,6 +176,7 @@ pygame.time.set_timer(ADD_CLOUD, 250)
 # || ELEMENTS ||
 
 game_instructions = ["INSTRUCTIONS", "Press [SPACE] to boost up", "Press [RIGHT ARROW] to speed up"]
+upgrades_menu = ["UPGRADES", "1. Fuel Efficiency + 10%", "More in future versions", "Upon further investment"]
 
 font = pygame.font.Font('Toyota-Type.ttf', 36)
 font_small = pygame.font.Font('Toyota-Type.ttf', 24)
@@ -178,6 +184,7 @@ font_small = pygame.font.Font('Toyota-Type.ttf', 24)
 main_plane = Plane()
 A_Start_Game = font.render('[A] Start Game', True, (255, 255, 255))
 B_Instructions_Button = font.render('[B] Instructions', True, (255, 255, 255))
+C_Upgrades_Button = font.render('[C] Upgrades', True, (255, 255, 255))
 
 all_sprites_group = pygame.sprite.Group()
 all_sprites_group.add(main_plane)
@@ -207,8 +214,11 @@ while running:
                 all_sprites_group.add(main_plane)
                 game_running = True
                 show_menu = False
+                show_instructions = False
             if event.key == pygame.K_b:
                 show_instructions = not show_instructions
+            if event.key == pygame.K_c:
+                show_upgrades_menu = not show_upgrades_menu
 
         if event.type == ADD_CLOUD:
             new_cloud = Cloud()
@@ -223,12 +233,17 @@ while running:
         for i in range(len(game_instructions)):
             instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
             window.blit(instruction, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+    if show_upgrades_menu:
+        for i in range(len(upgrades_menu)):
+            upgrade = font_small.render(upgrades_menu[i], True, (255, 255, 255))
+            window.blit(upgrade, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
 
     #RENDER YOUR GAME HERE
     if show_menu:
         time -= 1
         window.blit(A_Start_Game, (20, 10))
         window.blit(B_Instructions_Button, (20, 50))
+        window.blit(C_Upgrades_Button, (20, 90))
     
     user_input = pygame.key.get_pressed()
     if game_running:
