@@ -14,6 +14,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 SKY_BLUE = (135, 206, 235)
 OFF_WHITE = (196, 196, 196)
+GRAVITY_TIMER = 0
 
 # || PYGAME SETUP ||
 
@@ -40,8 +41,9 @@ main_db = [] # contains player list containers. Each player container as follows
 #mathematics determine position of paper airplane after thrown
 
 def v_y(t, vy_o):
+    global GRAVITY_TIMER
     '''projectile motion vertical velocity function for the plane'''
-    return ((vy_o*t+0.2*t**2)/100)
+    return ((vy_o*GRAVITY_TIMER+0.2*GRAVITY_TIMER**2)/100)
 
 def v_x(t, vx_o, touching_ground=False):
     '''projectile motion horizontal velocity function for the plane'''
@@ -61,7 +63,7 @@ class Plane(pygame.sprite.Sprite):
         self.vertical_speed = velocity_y
 
         #self.image = pygame.image.load("plane.png").convert()
-        self.image = pygame.image.load("paper_airplane.png")
+        self.image = pygame.image.load("CCA Highflyer/paper_airplane.png")
         self.image = pygame.transform.scale(self.image, (75,75))
         # self.image = pygame.Surface((25,25)) #to be replaced
         # self.image.fill(WHITE) #to be replaced
@@ -81,7 +83,7 @@ class Plane(pygame.sprite.Sprite):
         self.fuel_effeciency = 1.25
 
     def update(self, time, keystatus):
-        global show_menu
+        global show_menu, GRAVITY_TIMER
 
         self.velocity_x = v_x(time, self.horizontal_speed)
         if self.keep_moving:
@@ -119,15 +121,18 @@ class Plane(pygame.sprite.Sprite):
             # self.rect.x += vx
         
         # if holding space, boost up
-        if keystatus[K_SPACE] == True: self.boost(time)
+        if keystatus[K_SPACE] == True: 
+            GRAVITY_TIMER = 20
+            self.boost(time)
         # if holding right arrow, speed up
         if keystatus[K_RIGHT] == True: self.speed_up(time)
     
     def boost(self, time):
+        time -= 1
         '''add some height to the plane as a userevent triggered boost'''
         if self.gas <= 0: return
         if not self.keep_moving: return
-        self.rect.y -= 1.6*self.velocity_y
+        self.rect.y -= self.velocity_y +5
         self.gas -= self.fuel_effeciency
     
     def speed_up(self, time):
@@ -139,7 +144,7 @@ class Plane(pygame.sprite.Sprite):
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('star.png')
+        self.image = pygame.image.load('CCA Highflyer/star.png')
         self.image = pygame.transform.scale(self.image(15,15))
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
 
@@ -154,7 +159,7 @@ class Booster(pygame.sprite.Sprite):
     
 class Fuel(pygame.sprite.Sprite):
     def __init__(self):
-        self.image = pygame.image.load('fuel.png')
+        self.image = pygame.image.load('CCA Highflyer/fuel.png')
         self.image = pygame.transform.scale(self.image(10,10))
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
     def update(self):
@@ -164,7 +169,7 @@ class Cloud(pygame.sprite.Sprite):
     def __init__(self, x_velocity):
         pygame.sprite.Sprite.__init__(self)
         self.v_x = x_velocity/4
-        self.image = pygame.image.load('cloud_medium.png')
+        self.image = pygame.image.load('CCA Highflyer/cloud_medium.png')
         self.image = pygame.transform.scale(self.image, (25,25))
         #self.image.fill(OFF_WHITE)
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
@@ -186,8 +191,8 @@ pygame.time.set_timer(ADD_CLOUD, 1200)
 game_instructions = ["INSTRUCTIONS", "Press [SPACE] to boost up", "Press [RIGHT ARROW] to speed up"]
 upgrades_menu = ["UPGRADES", "1. Fuel Efficiency + 10%", "More in future versions", "Upon further investment"]
 
-font = pygame.font.Font('Toyota-Type.ttf', 36)
-font_small = pygame.font.Font('Toyota-Type.ttf', 24)
+font = pygame.font.Font('CCA Highflyer/Toyota-Type.ttf', 36)
+font_small = pygame.font.Font('CCA Highflyer/Toyota-Type.ttf', 24)
 
 main_plane = Plane()
 A_Start_Game = font.render('[A] Start Game', True, (255, 255, 255))
@@ -209,6 +214,9 @@ runs = 0
 time = 0
 while running:
     time += 1
+    if game_running: GRAVITY_TIMER += 1 
+ 
+    print(main_plane.velocity_y)
 
     keyPressed = pygame.key.get_pressed()
 
@@ -219,6 +227,7 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
+                GRAVITY_TIMER = 0 
                 runs += 1
                 A_Start_Game = font.render('[A] Play Again', True, (255, 255, 255))
                 time = 0
@@ -285,11 +294,16 @@ while running:
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
 
-print(main_db)
-
+# remove duplicate entries in main_db
+DB = []
+for i in range(len(main_db)):
+    if main_db[i] not in DB:
+        DB.append(main_db[i])
+# save main_db to a CSV file
 with open('data.csv', 'w') as f:
-    for i in range(len(main_db)):
-        f.write(str(main_db[i]) + '\n')
+    for i in range(len(DB)):
+        write = str(DB[i])
+        f.write(write[1:-1] + '\n')
 # Clean up
 pygame.quit()
 sys.exit()
