@@ -2,7 +2,7 @@
 
 import pygame, sys
 from pygame.locals import *
-from random import randint
+from random import randint, random
 
 # || CONSTANTS ||
 
@@ -108,6 +108,9 @@ class Plane(pygame.sprite.Sprite):
             self.final_range = self.rect.left
             # find amt of gas used in attempt
             self.gas_used = 100 - self.gas
+            # save all to main_db
+            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency]
+            main_db.append(run_data)
 
             # useless non working garbage code!
             # rah = v_x(time, self.horizontal_speed, True)
@@ -158,15 +161,16 @@ class Fuel(pygame.sprite.Sprite):
         raise NotImplementedError
     
 class Cloud(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x_velocity):
         pygame.sprite.Sprite.__init__(self)
+        self.v_x = x_velocity/4
         self.image = pygame.image.load('cloud_medium.png')
         self.image = pygame.transform.scale(self.image, (25,25))
         #self.image.fill(OFF_WHITE)
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
         
     def update(self):
-        pass
+        self.rect.x += self.v_x
         #if self.rect.left > SCREEN_WIDTH:
             #self.kill
         #only remove once they move off-screen TO THE LEFT!!!
@@ -174,7 +178,7 @@ class Cloud(pygame.sprite.Sprite):
 # || EVENTS ||
 
 ADD_CLOUD = pygame.USEREVENT + 12
-pygame.time.set_timer(ADD_CLOUD, 10)
+pygame.time.set_timer(ADD_CLOUD, 1200)
 # 2 args [what to happen, how often]
 
 # || ELEMENTS ||
@@ -189,6 +193,7 @@ main_plane = Plane()
 A_Start_Game = font.render('[A] Start Game', True, (255, 255, 255))
 B_Instructions_Button = font.render('[B] Instructions', True, (255, 255, 255))
 C_Upgrades_Button = font.render('[C] Upgrades', True, (255, 255, 255))
+D_Save_and_Quit = font.render('[D] Save and Quit', True, (255, 255, 255))
 
 all_sprites_group = pygame.sprite.Group()
 all_sprites_group.add(main_plane)
@@ -200,17 +205,21 @@ cloud_group = pygame.sprite.Group()
 running = True
 dt = 0
 
+runs = 0
 time = 0
 while running:
     time += 1
 
     keyPressed = pygame.key.get_pressed()
 
+    window.fill(SKY_BLUE)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
+                runs += 1
                 A_Start_Game = font.render('[A] Play Again', True, (255, 255, 255))
                 time = 0
                 main_plane = Plane()
@@ -219,20 +228,32 @@ while running:
                 game_running = True
                 show_menu = False
                 show_instructions = False
+                cloud_group.empty()
+                # save main_db to a a CSV file and clear the main_db container for next iteration
+                if not first_run:
+                    pass
             if event.key == pygame.K_b:
                 show_instructions = not show_instructions
             if event.key == pygame.K_c:
                 show_upgrades_menu = not show_upgrades_menu
+            if event.key == pygame.K_d:
+                # save main_db to a a CSV file and quit the pygame window
+                pygame.quit()
+                running = False
+                break
 
         if event.type == ADD_CLOUD:
-            new_cloud = Cloud()
+            new_cloud = Cloud(randint(-2,2))
             cloud_group.add(new_cloud)
-
-    window.fill(SKY_BLUE)
+    
+    if running == False:
+        break
 
     # Texts to display
     gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
     window.blit(gas_level_indicator, (20, 420))
+    runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
+    window.blit(runs_indicator, (20, 380))
     if show_instructions:
         for i in range(len(game_instructions)):
             instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
@@ -252,6 +273,7 @@ while running:
         window.blit(A_Start_Game, (20, 10))
         window.blit(B_Instructions_Button, (20, 50))
         window.blit(C_Upgrades_Button, (20, 90))
+        window.blit(D_Save_and_Quit, (20, 130))
     
     user_input = pygame.key.get_pressed()
     if game_running:
@@ -263,6 +285,11 @@ while running:
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
 
+print(main_db)
+
+with open('data.csv', 'w') as f:
+    for i in range(len(main_db)):
+        f.write(str(main_db[i]) + '\n')
 # Clean up
 pygame.quit()
 sys.exit()
