@@ -83,6 +83,8 @@ class Plane(pygame.sprite.Sprite):
         
         # if holding space, boost up
         if keystatus[K_SPACE] == True: self.boost(time)
+        # if holding right arrow, speed up
+        if keystatus[K_RIGHT] == True: self.speed_up(time)
     
     def boost(self, time):
         '''add some height to the plane as a userevent triggered boost'''
@@ -90,6 +92,12 @@ class Plane(pygame.sprite.Sprite):
         if not self.keep_moving: return
         self.rect.y -= 1.6*self.velocity_y
         self.gas -= 0.25
+    
+    def speed_up(self, time):
+        '''convert some of the plane's vertical velocity into horizontal velocity'''
+        if not self.keep_moving: return
+        self.rect.x += 1.6*self.velocity_x
+        self.rect.y += 1.6*self.velocity_y
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
