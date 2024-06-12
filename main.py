@@ -138,7 +138,11 @@ class Plane(pygame.sprite.Sprite):
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
-        raise NotImplementedError
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('star.png')
+        self.image = pygame.transform.scale(self.image(15,15))
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+
     def update(self):
         raise NotImplementedError
 
@@ -150,7 +154,9 @@ class Booster(pygame.sprite.Sprite):
     
 class Fuel(pygame.sprite.Sprite):
     def __init__(self):
-        raise NotImplementedError
+        self.image = pygame.image.load('fuel.png')
+        self.image = pygame.transform.scale(self.image(10,10))
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
     def update(self):
         raise NotImplementedError
     
