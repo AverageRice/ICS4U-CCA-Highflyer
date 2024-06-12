@@ -2,14 +2,13 @@
 
 import pygame, sys
 from pygame.locals import *
+from random import randint
 
 # || CONSTANTS ||
 
-SCREEN_HEIGHT = 690
-SCREEN_WIDTH = 1100
+SCREEN_HEIGHT = 500
+SCREEN_WIDTH = 1850
 FPS = 30
-
-GRAVITY = 9.8
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -27,34 +26,57 @@ clock = pygame.time.Clock()
 #functionality:
 #mathematics determine position of paper airplane after thrown
 
-def distance(velocity_x,time):
-    
+def v_y(t, vy_o):
+    '''projectile motion vertical velocity function for the plane'''
+    return ((vy_o*t+0.2*t**2)/100)
+
+def v_x(t, vx_o, touching_ground=False):
+    '''projectile motion horizontal velocity function for the plane'''
+    final = vx_o
+    # if touching_ground:
+    #     if final != 0:
+    #         return(final-final*0.5, 1)
+    #     elif final == 0:
+    #         return tuple(0, 0)
+    return (final)
 
 class Plane(pygame.sprite.Sprite):
-    def __init__ (self, velocity_x, velocity_y):
+    def __init__ (self, velocity_x=randint(6,9), velocity_y=randint(1,4)):
+        pygame.sprite.Sprite.__init__(self)
         #SPEEDS
         self.horizontal_speed = velocity_x
         self.vertical_speed = velocity_y
 
         #self.image = pygame.image.load("plane.png").convert()
-        self.surface = pygame.Surface((25,25)) #to be replaced
-        self.surface.fill(WHITE) #to be replaced
+        self.image = pygame.Surface((25,25)) #to be replaced
+        self.image.fill(WHITE) #to be replaced
         
         #self.rect = self.image.get_rect()
-        self.rect = self.surface.get_rect()
-        self.rect.center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        self.rect = self.image.get_rect()
+        self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
+
+        self.keep_moving = True
+
+    def update(self, time):
+        velocity_x = v_x(time, self.horizontal_speed)
+        if self.keep_moving:
+            self.rect.x += velocity_x
         
-        position_x = distance(velocity_x,)
-        position_x = self.horizontal_speed*time #need to begin tracking time immediatley after plane is thrown.
-        position_y = 
-
-        return position_x
-
-    def update(self):
-        if user_input[K_SPACE]:
-            self.horizontal_speed += 10
-            self.vertical_speed += 10
-            self.fuel
+        self.rect.y += v_y(time, self.vertical_speed)
+        
+        # trump administration mexican border control
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+            self.keep_moving = False
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
+            self.keep_moving = False
+            # rah = v_x(time, self.horizontal_speed, True)
+            # vx = rah[0]; self.keep_moving = rah[1]
+            # if self.keep_moving is 0: self.keep_moving = False
+            # self.rect.x += vx
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self):
@@ -88,14 +110,19 @@ class Cloud(pygame.sprite.Sprite):
 
 # || ELEMENTS ||
 
-main_plane = Plane(2,3)
+main_plane = Plane()
+
+plane_group = pygame.sprite.Group()
+plane_group.add(main_plane)
 
 # || GAME WINDOW ||
 
 running = True
 dt = 0
 
+time = 0
 while running:
+    time += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -105,11 +132,14 @@ while running:
     #RENDER YOUR GAME HERE
 
     user_input = pygame.key.get_pressed()
-    main_plane.update()
+    plane_group.update(time)
+    plane_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
 
-pygame.quit()
-
 #https://stackoverflow.com/questions/63350720/pygame-mouse-speed
+
+# Clean up
+pygame.quit()
+sys.exit()
