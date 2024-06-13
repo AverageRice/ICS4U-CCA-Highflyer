@@ -129,7 +129,7 @@ class Plane(pygame.sprite.Sprite):
         # Collision detection with booster objects
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
         for booster in booster_collisions:
-            self.rect.x += 1.6*self.velocity_x
+            self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
             GRAVITY_TIMER = 0
             booster_group.remove(booster)
     
@@ -266,24 +266,30 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
+                # reset game physics
                 GRAVITY_TIMER = 0 
-                runs += 1
+                # change menu start text
                 A_Start_Game = font.render('[1] Play Again', True, (255, 255, 255))
+                # reset game logic bools
                 time = 0
-                main_plane = Plane()
-                plane_group.empty()
-                plane_group.add(main_plane)
+                runs += 1
                 game_running = True
                 show_menu = False
                 show_instructions = False
+                # clear all sprite groups
                 cloud_group.empty()
-                for x in range(0,20):
-                    new_cloud = Cloud(0)
-                    cloud_group.add(new_cloud)
                 booster_group.empty()
                 fuel_group.empty()
                 star_group.empty()
-                # save main_db to a a CSV file and clear the main_db container for next iteration
+                plane_group.empty()
+                # add new plane for next run
+                main_plane = Plane()
+                plane_group.add(main_plane)
+                # create new clouds
+                for x in range(0,20):
+                    new_cloud = Cloud(0)
+                    cloud_group.add(new_cloud)
+                # indicate first run completed
                 if first_run:
                     first_run = False
             if event.key == pygame.K_2:
@@ -296,9 +302,6 @@ while running:
                 running = False
                 break
                 
-        if event.type == ADD_CLOUD:
-            new_cloud = Cloud(0)
-            cloud_group.add(new_cloud)
         if event.type == ADD_FUEL:
             new_fuel = Fuel(0, main_plane.rect.right)
             print('fuel added')
@@ -311,8 +314,14 @@ while running:
     if game_running:
         cloud_group.update()
         cloud_group.draw(window)
-        all_sprites_group.update(time, keyPressed)
-        all_sprites_group.draw(window)
+        plane_group.update(time, keyPressed)
+        plane_group.draw(window)
+        booster_group.update()
+        booster_group.draw(window)
+        fuel_group.update()
+        fuel_group.draw(window)
+        star_group.update()
+        star_group.draw(window)
         
     if show_instructions:
         for i in range(len(game_instructions)):
@@ -346,20 +355,6 @@ while running:
         window.blit(gas_level_indicator, (20, 420))
         runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
         window.blit(runs_indicator, (20, 380))
-
-    # || DISPLAY AND UPDATE ELEMENTS ||
-
-    if game_running:
-        plane_group.update(time, keyPressed)
-        plane_group.draw(window)
-        cloud_group.update()
-        cloud_group.draw(window)
-        booster_group.update()
-        booster_group.draw(window)
-        fuel_group.update()
-        fuel_group.draw(window)
-        star_group.update()
-        star_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1750
