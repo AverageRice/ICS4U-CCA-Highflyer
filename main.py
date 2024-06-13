@@ -8,7 +8,7 @@ from random import randint, random
 
 SCREEN_HEIGHT = 500
 SCREEN_WIDTH = 1850
-FPS = 30
+FPS = 60
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -43,7 +43,7 @@ main_db = [] # contains player list containers. Each player container as follows
 def v_y(t, vy_o):
     global GRAVITY_TIMER
     '''projectile motion vertical velocity function for the plane'''
-    return ((vy_o*GRAVITY_TIMER+0.2*GRAVITY_TIMER**2)/100)
+    return ((vy_o*GRAVITY_TIMER+0.0005*GRAVITY_TIMER**2)/100)
 
 def v_x(t, vx_o, touching_ground=False):
     '''projectile motion horizontal velocity function for the plane'''
@@ -56,8 +56,9 @@ def v_x(t, vx_o, touching_ground=False):
     return (final)
   
 class Plane(pygame.sprite.Sprite):
-    def __init__ (self, velocity_x=randint(6,9), velocity_y=randint(1,4)):
+    def __init__ (self, velocity_x = randint(6,9), velocity_y = randint(1,4)):
         pygame.sprite.Sprite.__init__(self)
+
         #SPEEDS
         self.horizontal_speed = velocity_x
         self.vertical_speed = velocity_y
@@ -135,7 +136,7 @@ class Plane(pygame.sprite.Sprite):
         '''add some height to the plane as a userevent triggered boost'''
         if self.gas <= 0: return
         if not self.keep_moving: return
-        self.rect.y -= 2*self.velocity_y
+        self.rect.y -= 2*self.velocity_y + 2
         self.gas -= self.fuel_effeciency
     
     def speed_up(self, time):
@@ -178,7 +179,8 @@ class Cloud(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.v_x = x_velocity/4
         self.image = pygame.image.load('cloud_medium.png')
-        self.image = pygame.transform.scale(self.image, (125,125))
+        self.size = randint(100,250)
+        self.image = pygame.transform.scale(self.image, (self.size,self.size))
         #self.image.fill(OFF_WHITE)
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
         
@@ -190,9 +192,7 @@ class Cloud(pygame.sprite.Sprite):
 
 # || EVENTS ||
 
-ADD_CLOUD = pygame.USEREVENT + 12
-pygame.time.set_timer(ADD_CLOUD, 1200)
-# 2 args [what to happen, how often]
+
 
 # || ELEMENTS ||
 
@@ -266,10 +266,14 @@ while running:
                 show_menu = False
                 show_instructions = False
                 cloud_group.empty()
+
+                for x in range(0,20):
+                    new_cloud = Cloud(0)
+                    cloud_group.add(new_cloud)
+
                 # save main_db to a a CSV file and clear the main_db container for next iteration
                 if first_run:
                     first_run = False
-                    pass
             if event.key == pygame.K_2:
                 show_instructions = not show_instructions
             if event.key == pygame.K_3:
@@ -280,9 +284,11 @@ while running:
                 running = False
                 break
 
-        if event.type == ADD_CLOUD:
-            new_cloud = Cloud(randint(-2,2))
-            cloud_group.add(new_cloud)
+    if game_running:
+        cloud_group.update()
+        cloud_group.draw(window)
+        all_sprites_group.update(time, keyPressed)
+        all_sprites_group.draw(window)
 
     if show_instructions:
         for i in range(len(game_instructions)):
@@ -314,14 +320,8 @@ while running:
 
     # || DISPLAY AND UPDATE ELEMENTS ||
 
-    if game_running:
-        all_sprites_group.update(time, keyPressed)
-        all_sprites_group.draw(window)
-        cloud_group.update()
-        cloud_group.draw(window)
-
     pygame.display.flip()
-    dt = clock.tick(FPS)/1000
+    dt = clock.tick(FPS)/1750
 
 # || STATS MANAGEMENT FOR JUPYTER/STATISTIC PORTION ||
 
