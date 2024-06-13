@@ -80,6 +80,7 @@ class Plane(pygame.sprite.Sprite):
     def update(self, time, keystatus):
         global show_menu, GRAVITY_TIMER
 
+        if not game_running: return
         self.velocity_x = v_x(time, self.horizontal_speed)
         if self.keep_moving:
             self.rect.x += self.velocity_x
@@ -122,7 +123,7 @@ class Plane(pygame.sprite.Sprite):
         # Collision detection with fuel objects
         fuel_collisions = pygame.sprite.spritecollide(self, fuel_group, True)
         for fuel in fuel_collisions:
-            self.gas += 30
+            self.gas += 20
             fuel_group.remove(fuel)
         # Collision detection with booster objects
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
@@ -295,11 +296,11 @@ while running:
             new_cloud = Cloud(0)
             cloud_group.add(new_cloud)
         if event.type == ADD_FUEL:
-            new_fuel = Fuel(0)
+            new_fuel = Fuel(0, main_plane.rect.right)
             print('fuel added')
             fuel_group.add(new_fuel)
         if event.type == Add_BOOSTER:
-            new_booster = Booster(0)
+            new_booster = Booster(0, main_plane.rect.right)
             print('booster added')
             booster_group.add(new_booster)
 
