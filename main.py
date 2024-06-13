@@ -122,12 +122,12 @@ class Plane(pygame.sprite.Sprite):
         # Collision detection with fuel objects
         fuel_collisions = pygame.sprite.spritecollide(self, fuel_group, True)
         for fuel in fuel_collisions:
-            self.gas += 10
+            self.gas += 30
             fuel_group.remove(fuel)
         # Collision detection with booster objects
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
         for booster in booster_collisions:
-            self.fuel_effeciency -= 0.1
+            self.rect.x += 1.6*self.velocity_x
             GRAVITY_TIMER = 0
             booster_group.remove(booster)
     
@@ -156,24 +156,26 @@ class Star(pygame.sprite.Sprite):
         self.rect = self.rect
 
 class Booster(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x_velocity, spawn_x_range_start):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('booster.png')
-        self.image = pygame.transform.scale(self.image, (75,75))
-        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.image = pygame.transform.scale(self.image, (65,65))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.x_velocity = x_velocity
 
     def update(self):
-        self.rect = self.rect
+        self.rect.x += self.x_velocity
     
 class Fuel(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x_velocity, spawn_x_range_start):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('fuel.png')
-        self.image = pygame.transform.scale(self.image, (10,10))
-        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.image = pygame.transform.scale(self.image, (60,60))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.x_velocity = x_velocity
 
     def update(self):
-        self.rect = self.rect
+        self.rect.x += self.x_velocity
     
 class Cloud(pygame.sprite.Sprite):
     def __init__(self, x_velocity):
@@ -224,8 +226,8 @@ Logo = pygame.transform.scale(Logo, (3774/5,2391/5))
 
 main_plane = Plane()
 
-all_sprites_group = pygame.sprite.Group()
-all_sprites_group.add(main_plane)
+plane_group = pygame.sprite.Group()
+plane_group.add(main_plane)
 
 cloud_group = pygame.sprite.Group()
 booster_group = pygame.sprite.Group()
@@ -268,16 +270,18 @@ while running:
                 A_Start_Game = font.render('[1] Play Again', True, (255, 255, 255))
                 time = 0
                 main_plane = Plane()
-                all_sprites_group.empty()
-                all_sprites_group.add(main_plane)
+                plane_group.empty()
+                plane_group.add(main_plane)
                 game_running = True
                 show_menu = False
                 show_instructions = False
                 cloud_group.empty()
+                booster_group.empty()
+                fuel_group.empty()
+                star_group.empty()
                 # save main_db to a a CSV file and clear the main_db container for next iteration
                 if first_run:
                     first_run = False
-                    pass
             if event.key == pygame.K_2:
                 show_instructions = not show_instructions
             if event.key == pygame.K_3:
@@ -288,13 +292,15 @@ while running:
                 running = False
                 break
         if event.type == ADD_CLOUD:
-            new_cloud = Cloud(randint(-2,2))
+            new_cloud = Cloud(0)
             cloud_group.add(new_cloud)
         if event.type == ADD_FUEL:
-            new_fuel = Fuel()
+            new_fuel = Fuel(0)
+            print('fuel added')
             fuel_group.add(new_fuel)
         if event.type == Add_BOOSTER:
-            new_booster = Booster()
+            new_booster = Booster(0)
+            print('booster added')
             booster_group.add(new_booster)
 
     if show_instructions:
@@ -310,6 +316,7 @@ while running:
             main_plane.fuel_effeciency -= 0.1
             show_upgrades_menu = False
     
+    # break the game loop if the player save and quit
     if not running:
         break
 
@@ -331,10 +338,16 @@ while running:
     # || DISPLAY AND UPDATE ELEMENTS ||
 
     if game_running:
-        all_sprites_group.update(time, keyPressed)
-        all_sprites_group.draw(window)
+        plane_group.update(time, keyPressed)
+        plane_group.draw(window)
         cloud_group.update()
         cloud_group.draw(window)
+        booster_group.update()
+        booster_group.draw(window)
+        fuel_group.update()
+        fuel_group.draw(window)
+        star_group.update()
+        star_group.draw(window)
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1000
