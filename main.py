@@ -180,7 +180,7 @@ class Booster(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('booster.png')
         self.image = pygame.transform.scale(self.image, (65,65))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (SCREEN_WIDTH+1000, randint(0, SCREEN_HEIGHT)))
         self.x_velocity = x_velocity
 
     def update(self):
@@ -191,7 +191,7 @@ class Fuel(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('fuel.png')
         self.image = pygame.transform.scale(self.image, (60,60))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (SCREEN_WIDTH+1000, randint(0, SCREEN_HEIGHT)))
         self.x_velocity = x_velocity
 
     def update(self):
@@ -205,7 +205,7 @@ class Cloud(pygame.sprite.Sprite):
         self.size = randint(100,250)
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
         #self.image.fill(OFF_WHITE)
-        self.rect = self.image.get_rect(center = (randint(SCREEN_WIDTH//2,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
+        self.rect = self.image.get_rect(center = (SCREEN_WIDTH+1000, randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
         
     def update(self):
         self.rect.x += self.v_x
