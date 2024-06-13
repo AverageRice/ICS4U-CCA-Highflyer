@@ -146,23 +146,24 @@ class Plane(pygame.sprite.Sprite):
         self.rect.y += 1.6*self.velocity_y
 
 class Star(pygame.sprite.Sprite):
-    def __init__ (self):
+    def __init__ (self, spawn_x_range_start):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('star.png')
         self.image = pygame.transform.scale(self.image, (15,15))
-        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
 
     def update(self):
-        raise NotImplementedError
+        self.rect = self.rect
 
 class Booster(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('booster.png')
         self.image = pygame.transform.scale(self.image, (75,75))
+        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
 
     def update(self):
-        raise NotImplementedError
+        self.rect = self.rect
     
 class Fuel(pygame.sprite.Sprite):
     def __init__(self):
@@ -172,7 +173,7 @@ class Fuel(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
 
     def update(self):
-        raise NotImplementedError
+        self.rect = self.rect
     
 class Cloud(pygame.sprite.Sprite):
     def __init__(self, x_velocity):
@@ -244,7 +245,7 @@ while running:
 
     # || DEBUG INFO ||
 
-    print(main_plane.velocity_y)
+    # print(main_plane.velocity_y)
 
     # || TIME UPDATING ||
 
