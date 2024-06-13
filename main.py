@@ -118,6 +118,17 @@ class Plane(pygame.sprite.Sprite):
             self.boost(time)
         # if holding right arrow, speed up
         if keystatus[K_RIGHT] == True: self.speed_up(time)
+
+        # Collision detection with fuel objects
+        fuel_collisions = pygame.sprite.spritecollide(self, fuel_group, True)
+        for fuel in fuel_collisions:
+            self.gas += 10
+            fuel_group.remove(fuel)
+        # Collision detection with booster objects
+        booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
+        for booster in booster_collisions:
+            self.fuel_effeciency -= 0.1
+            booster_group.remove(booster)
     
     def boost(self, time):
         time -= 1
@@ -182,6 +193,9 @@ class Cloud(pygame.sprite.Sprite):
 ADD_CLOUD = pygame.USEREVENT + 12
 pygame.time.set_timer(ADD_CLOUD, 1200)
 # 2 args [what to happen, how often]
+
+ADD_FUEL = pygame.USEREVENT + 13
+pygame.time.set_timer(ADD_FUEL, 3000)
 
 # || ELEMENTS ||
 
@@ -268,10 +282,12 @@ while running:
                 pygame.quit()
                 running = False
                 break
-
         if event.type == ADD_CLOUD:
             new_cloud = Cloud(randint(-2,2))
             cloud_group.add(new_cloud)
+        if event.type == ADD_FUEL:
+            new_fuel = Fuel()
+            fuel_group.add(new_fuel)
 
     if show_instructions:
         for i in range(len(game_instructions)):
@@ -285,6 +301,9 @@ while running:
         if keyPressed[K_1]:
             main_plane.fuel_effeciency -= 0.1
             show_upgrades_menu = False
+    
+    if not running:
+        break
 
     if show_menu:
         time -= 1
