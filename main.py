@@ -31,6 +31,7 @@ first_run = True
 show_instructions = False
 show_upgrades_menu = False
 all_speed = -4
+cloud_spawn_rate = 1000
 
 # || STATS MANAGEMENT FOR JUPYTER/STATISTIC PORTION ||
 
@@ -73,16 +74,17 @@ class Plane(pygame.sprite.Sprite):
         self.nitrous = 0
         self.velocity_x = 0
         self.velocity_y = 0
+        self.boost_const = 2
 
         # Stats for pandas analysis
         self.final_range = 0
         self.max_height = 0
         self.gas_used = 0
         self.nitrous_used = 0
-        self.fuel_effeciency = 0.9
+        self.fuel_effeciency = 0.1
 
     def update(self, time, keystatus):
-        global show_menu, GRAVITY_TIMER, all_speed, game_running
+        global show_menu, GRAVITY_TIMER, all_speed, game_running, cloud_spawn_rate
 
         if not game_running: return
         self.velocity_x = v_x(time, self.horizontal_speed)
@@ -143,7 +145,9 @@ class Plane(pygame.sprite.Sprite):
         for booster in booster_collisions:
             self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
             #GRAVITY_TIMER = 0
-            all_speed += 3
+            all_speed -= 3
+            self.boost_const += 1.5
+            cloud_spawn_rate += 800
             booster_group.remove(booster)
     
     def boost(self, time):
@@ -151,7 +155,7 @@ class Plane(pygame.sprite.Sprite):
         '''add some height to the plane as a userevent triggered boost'''
         if self.gas <= 0: return
         if not self.keep_moving: return
-        self.rect.y -= 2*self.velocity_y + 2
+        self.rect.y -= self.boost_const*self.velocity_y + 2
         self.gas -= self.fuel_effeciency
     
     def speed_up(self, time):
@@ -166,7 +170,7 @@ class Star(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('star.png')
         self.image = pygame.transform.scale(self.image, (15,15))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
 
     def update(self):
         self.rect = self.rect
@@ -176,7 +180,7 @@ class Booster(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('booster.png')
         self.image = pygame.transform.scale(self.image, (65,65))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
         self.x_velocity = x_velocity
 
     def update(self):
@@ -187,7 +191,7 @@ class Fuel(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('fuel.png')
         self.image = pygame.transform.scale(self.image, (60,60))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH), randint(0, 0.6*SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
         self.x_velocity = x_velocity
 
     def update(self):
@@ -196,12 +200,12 @@ class Fuel(pygame.sprite.Sprite):
 class Cloud(pygame.sprite.Sprite):
     def __init__(self, x_velocity):
         pygame.sprite.Sprite.__init__(self)
-        self.v_x = x_velocity/4
+        self.v_x = x_velocity
         self.image = pygame.image.load('cloud_medium.png')
         self.size = randint(100,250)
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
         #self.image.fill(OFF_WHITE)
-        self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
+        self.rect = self.image.get_rect(center = (randint(SCREEN_WIDTH//2,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
         
     def update(self):
         self.rect.x += self.v_x
@@ -212,10 +216,13 @@ class Cloud(pygame.sprite.Sprite):
 # || EVENTS ||
 
 ADD_FUEL = pygame.USEREVENT + 13
-pygame.time.set_timer(ADD_FUEL, 1000)
+pygame.time.set_timer(ADD_FUEL, 5000)
 
-Add_BOOSTER = pygame.USEREVENT + 14
-pygame.time.set_timer(Add_BOOSTER, 3000)
+ADD_BOOSTER = pygame.USEREVENT + 14
+pygame.time.set_timer(ADD_BOOSTER, 3000)
+
+ADD_CLOUD = pygame.USEREVENT + 15
+pygame.time.set_timer(ADD_CLOUD, 1000)
 
 # || ELEMENTS ||
 
@@ -241,7 +248,6 @@ main_plane = Plane()
 
 plane_group = pygame.sprite.Group()
 plane_group.add(main_plane)
-
 cloud_group = pygame.sprite.Group()
 booster_group = pygame.sprite.Group()
 fuel_group = pygame.sprite.Group()
@@ -294,10 +300,10 @@ while running:
                 # add new plane for next run
                 main_plane = Plane()
                 plane_group.add(main_plane)
-                # create new clouds
-                for x in range(0,20):
-                    new_cloud = Cloud(all_speed)
-                    cloud_group.add(new_cloud)
+                # # create new clouds
+                # for x in range(0,20):
+                #     new_cloud = Cloud(all_speed)
+                #     cloud_group.add(new_cloud)
                 # indicate first run completed
                 if first_run:
                     first_run = False
@@ -314,9 +320,12 @@ while running:
             if event.type == ADD_FUEL:
                 new_fuel = Fuel(all_speed, main_plane.rect.right)
                 fuel_group.add(new_fuel)
-            if event.type == Add_BOOSTER:
+            if event.type == ADD_BOOSTER:
                 new_booster = Booster(all_speed, main_plane.rect.right)
                 booster_group.add(new_booster)
+            if event.type == ADD_CLOUD:
+                new_cloud = Cloud(all_speed)
+                cloud_group.add(new_cloud)
 
     if game_running:
         cloud_group.update()
@@ -345,7 +354,7 @@ while running:
             show_upgrades_menu = False
     
     # break the game loop if the player save and quit
-    if not running:
+    if not running: 
         break
 
     if show_menu:
