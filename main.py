@@ -45,14 +45,9 @@ def v_y(t, vy_o):
     '''projectile motion vertical velocity function for the plane'''
     return ((vy_o*GRAVITY_TIMER+0.2*GRAVITY_TIMER**2)/100)
 
-def v_x(t, vx_o, touching_ground=False):
+def v_x(t, vx_o):
     '''projectile motion horizontal velocity function for the plane'''
     final = vx_o
-    # if touching_ground:
-    #     if final != 0:
-    #         return(final-final*0.5, 1)
-    #     elif final == 0:
-    #         return tuple(0, 0)
     return (final)
   
 class Plane(pygame.sprite.Sprite):
@@ -113,14 +108,8 @@ class Plane(pygame.sprite.Sprite):
             self.gas_used = 100 - self.gas
 
             # save all to main_db
-            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency]
+            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency, time]
             main_db.append(run_data)
-
-            # useless non working garbage code!
-            # rah = v_x(time, self.horizontal_speed, True)
-            # vx = rah[0]; self.keep_moving = rah[1]
-            # if self.keep_moving is 0: self.keep_moving = False
-            # self.rect.x += vx
         
         # if holding space, boost up
         if keystatus[K_SPACE] == True: 
@@ -160,7 +149,6 @@ class Booster(pygame.sprite.Sprite):
         self.image = pygame.image.load('booster.png')
         self.image = pygame.transform.scale(self.image, (75,75))
 
-        raise NotImplementedError
     def update(self):
         raise NotImplementedError
     
@@ -170,6 +158,7 @@ class Fuel(pygame.sprite.Sprite):
         self.image = pygame.image.load('fuel.png')
         self.image = pygame.transform.scale(self.image, (10,10))
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+
     def update(self):
         raise NotImplementedError
     
