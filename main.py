@@ -128,6 +128,7 @@ class Plane(pygame.sprite.Sprite):
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
         for booster in booster_collisions:
             self.fuel_effeciency -= 0.1
+            GRAVITY_TIMER = 0
             booster_group.remove(booster)
     
     def boost(self, time):
@@ -196,6 +197,9 @@ pygame.time.set_timer(ADD_CLOUD, 1200)
 
 ADD_FUEL = pygame.USEREVENT + 13
 pygame.time.set_timer(ADD_FUEL, 3000)
+
+Add_BOOSTER = pygame.USEREVENT + 14
+pygame.time.set_timer(Add_BOOSTER, 3000)
 
 # || ELEMENTS ||
 
@@ -288,6 +292,9 @@ while running:
         if event.type == ADD_FUEL:
             new_fuel = Fuel()
             fuel_group.add(new_fuel)
+        if event.type == Add_BOOSTER:
+            new_booster = Booster()
+            booster_group.add(new_booster)
 
     if show_instructions:
         for i in range(len(game_instructions)):
