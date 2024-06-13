@@ -45,7 +45,7 @@ def v_y(t, vy_o):
     '''projectile motion vertical velocity function for the plane'''
     return ((vy_o*GRAVITY_TIMER+0.2*GRAVITY_TIMER**2)/100)
 
-def v_x(t, vx_o, touching_ground=False):
+def v_x(t, vx_o, touching_grass=False):
     '''projectile motion horizontal velocity function for the plane'''
     final = vx_o
     # if touching_ground:
@@ -111,7 +111,7 @@ class Plane(pygame.sprite.Sprite):
             # find amt of gas used in attempt
             self.gas_used = 100 - self.gas
             # save all to main_db
-            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency]
+            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency ,time]
             main_db.append(run_data)
 
             # useless non working garbage code!
@@ -153,21 +153,22 @@ class Star(pygame.sprite.Sprite):
         raise NotImplementedError
 
 class Booster(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x_pos, y_pos):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('booster.png')
         self.image = pygame.transform.scale(self.image, (75,75))
+        self.rect = self.image.get_rect(center = (x_pos, y_pos))
 
-        raise NotImplementedError
     def update(self):
         raise NotImplementedError
     
 class Fuel(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x_pos, y_pos):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('fuel.png')
         self.image = pygame.transform.scale(self.image, (10,10))
         self.rect = self.image.get_rect(center = (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)))
+
     def update(self):
         raise NotImplementedError
     
@@ -189,7 +190,7 @@ class Cloud(pygame.sprite.Sprite):
 # || EVENTS ||
 
 ADD_CLOUD = pygame.USEREVENT + 12
-pygame.time.set_timer(ADD_CLOUD, 1200)
+pygame.time.set_timer(ADD_CLOUD, 700)
 # 2 args [what to happen, how often]
 
 # || ELEMENTS ||
@@ -231,9 +232,7 @@ runs = 0
 time = 0
 while running:
     time += 1
-    if game_running: GRAVITY_TIMER += 1 
-
-    print(main_plane.velocity_y)
+    if game_running: GRAVITY_TIMER += 1
 
     keyPressed = pygame.key.get_pressed()
 
@@ -255,9 +254,8 @@ while running:
                 show_menu = False
                 show_instructions = False
                 cloud_group.empty()
-                # save main_db to a a CSV file and clear the main_db container for next iteration
-                if not first_run:
-                    pass
+                if first_run:
+                    first_run = False
             if event.key == pygame.K_2:
                 show_instructions = not show_instructions
             if event.key == pygame.K_3:
@@ -269,11 +267,13 @@ while running:
                 break
 
         if event.type == ADD_CLOUD:
-            new_cloud = Cloud(randint(-2,2))
+            new_cloud = Cloud(randint(-1,1))
             cloud_group.add(new_cloud)
 
     if running == False:
         break
+
+    if first_run: window.blit(Logo, (800,10))
 
     # Texts to display
     gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
@@ -293,11 +293,10 @@ while running:
             main_plane.fuel_effeciency -= 0.1
             show_upgrades_menu = False
 
-    #RENDER YOUR GAME HERE
+    #RENDER GAME HERE
     
     if show_menu:
         time -= 1
-        window.blit(Logo, (800,10))
         window.blit(A_Start_Game, (20, 10))
         window.blit(B_Instructions_Button, (20, 50))
         window.blit(C_Upgrades_Button, (20, 90))
