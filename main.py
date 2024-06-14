@@ -38,7 +38,7 @@ def v_x(t, vx_o):
 
 # || STATS MANAGEMENT FOR JUPYTER/STATISTIC PORTION ||
 
-main_db = [] # contains player list containers. Each player container as follows: [max_range, max_height, gas_used, fuel_effeciency]
+main_db = [] # contains player list containers. Each player container as follows: [max_range, max_height_RAW, gas_used, fuel_effeciency]
 
 # || VARS ||
 
@@ -53,7 +53,7 @@ cloud_spawn_rate = 1000
 # || GAME OBJECTS ||
   
 class Plane(pygame.sprite.Sprite):
-    def __init__ (self, velocity_x = randint(0,0), velocity_y = randint(1,4)):
+    def __init__ (self, velocity_x = randint(6,9), velocity_y = randint(1,4)):
         pygame.sprite.Sprite.__init__(self)
 
         self.horizontal_speed = velocity_x
@@ -74,26 +74,28 @@ class Plane(pygame.sprite.Sprite):
 
         # Stats for pandas analysis
         self.final_range = 0
-        self.max_height = 0
+        self.max_height_RAW = SCREEN_HEIGHT
         self.gas_used = 0
-        self.nitrous_used = 0
         self.fuel_effeciency = 0.25
+        self.max_height = 0
 
     def update(self, time, keystatus, running):
         global show_menu, all_speed, game_running, cloud_spawn_rate, GRAVITY_TIMER
 
         if not game_running: return
+
         self.velocity_x = v_x(time, self.horizontal_speed)
-        if self.keep_moving:
-            self.rect.x += self.velocity_x
-        
         self.velocity_y = v_y(time, self.vertical_speed)
         self.rect.y += self.velocity_y
 
         # update max height stat
-        if self.rect.y > self.max_height:
-            self.max_height == self.rect.bottom
-        
+        if self.rect.y < self.max_height_RAW:
+            self.max_height_RAW = self.rect.y
+            self.max_height = SCREEN_HEIGHT - self.max_height_RAW
+
+        # update final range stat
+        self.final_range += self.velocity_x
+
         # trump administration mexican border control
         if self.rect.right > SCREEN_WIDTH:
             self.rect.right = SCREEN_WIDTH
@@ -109,13 +111,11 @@ class Plane(pygame.sprite.Sprite):
             game_running = False
             all_speed = 0
 
-            # update landing range stat
-            self.final_range = self.rect.left
             # find amt of gas used in attempt
             self.gas_used = 100 - self.gas
 
             # save all to main_db
-            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency, time]
+            run_data = [self.final_range, self.max_height_RAW, self.gas_used, self.fuel_effeciency, time]
             main_db.append(run_data)
 
             # clear powerup sprite groups
@@ -358,8 +358,8 @@ while running:
             window.blit(Last_Run, (20, 280))
             final_range = font.render('Final Range: ' + str(main_plane.final_range) + 'm', True, (255, 255, 255))
             window.blit(final_range, (20, 320))
-            max_height = font.render('Max Height: ' + str(main_plane.max_height) + 'm', True, (255, 255, 255))
-            window.blit(max_height, (20, 360))
+            max_height_label = font.render('Max Height: ' + str(main_plane.max_height) + 'm', True, (255, 255, 255))
+            window.blit(max_height_label, (20, 360))
             gas_used = font.render('Gas Used: ' + str(main_plane.gas_used) + '%', True, (255, 255, 255))
             window.blit(gas_used, (20, 400))
             # fuel_effeciency = font.render('Fuel Efficiency: ' + str(main_plane.fuel_effeciency) + '%', True, (255, 255, 255))
