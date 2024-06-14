@@ -115,7 +115,7 @@ class Plane(pygame.sprite.Sprite):
             self.gas_used = 100 - self.gas
 
             # save all to main_db
-            run_data = [self.final_range, self.max_height_RAW, self.gas_used, self.fuel_effeciency, time]
+            run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency, time]
             main_db.append(run_data)
 
             # clear powerup sprite groups
@@ -323,12 +323,24 @@ while running:
         break
 
     if game_running:
+        # update sprites
         booster_group.update()
         booster_group.draw(window)
         fuel_group.update()
         fuel_group.draw(window)
         star_group.update()
         star_group.draw(window)
+        # indicators
+        runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
+        window.blit(runs_indicator, (20, 410))
+        gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
+        window.blit(gas_level_indicator, (20, 450))
+        # show distance travelled by plane so far in the bottom right of the screen
+        distance_travelled = font.render('Distance: ' + str(main_plane.final_range) + 'm', True, (255, 255, 255))
+        window.blit(distance_travelled, (SCREEN_WIDTH - 700, SCREEN_HEIGHT - 50))
+        # show current speed of plane
+        speed = font.render('Speed: ' + str(-1*all_speed) + 'm/s', True, (255, 255, 255))
+        window.blit(speed, (SCREEN_WIDTH - 700, SCREEN_HEIGHT - 100))
 
     if show_menu:
         time -= 1
@@ -352,12 +364,6 @@ while running:
             # window.blit(fuel_effeciency, (20, 320))
             time_elapsed = font.render('Time Elapsed: ' + str(time) + 'units', True, (255, 255, 255))
             window.blit(time_elapsed, (20, 440))
-
-    if not show_menu:
-        runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
-        window.blit(runs_indicator, (20, 410))
-        gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
-        window.blit(gas_level_indicator, (20, 450))
     
     if show_instructions:
         for i in range(len(game_instructions)):
