@@ -37,10 +37,8 @@ cloud_spawn_rate = 1000
 
 main_db = [] # contains player list containers. Each player container as follows: [max_range, max_height, gas_used, fuel_effeciency]
 
-# || CLASSES ||
 
-#functionality:
-#mathematics determine position of paper airplane after thrown
+# || VELOCITY FUNCTIONS ||
 
 def v_y(t, vy_o):
     global GRAVITY_TIMER
@@ -51,20 +49,18 @@ def v_x(t, vx_o):
     '''projectile motion horizontal velocity function for the plane'''
     final = vx_o
     return (final)
+
+# || GAME OBJECTS ||
   
 class Plane(pygame.sprite.Sprite):
     def __init__ (self, velocity_x = randint(0,0), velocity_y = randint(1,4)):
         pygame.sprite.Sprite.__init__(self)
 
-        #SPEEDS
         self.horizontal_speed = velocity_x
         self.vertical_speed = velocity_y
 
-        #self.image = pygame.image.load("plane.png").convert()
         self.image = pygame.image.load("paper_airplane.png")
         self.image = pygame.transform.scale(self.image, (75,75))
-        # self.image = pygame.Surface((25,25)) #to be replaced
-        # self.image.fill(WHITE) #to be replaced
 
         self.rect = self.image.get_rect()
         self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
@@ -81,7 +77,7 @@ class Plane(pygame.sprite.Sprite):
         self.max_height = 0
         self.gas_used = 0
         self.nitrous_used = 0
-        self.fuel_effeciency = 0.1
+        self.fuel_effeciency = 0.25
 
     def update(self, time, keystatus):
         global show_menu, GRAVITY_TIMER, all_speed, game_running, cloud_spawn_rate
@@ -93,6 +89,7 @@ class Plane(pygame.sprite.Sprite):
         
         self.velocity_y = v_y(time, self.vertical_speed)
         self.rect.y += self.velocity_y
+
         # update max height stat
         if self.rect.y > self.max_height:
             self.max_height == self.rect.bottom
@@ -103,17 +100,17 @@ class Plane(pygame.sprite.Sprite):
             self.keep_moving = False
         if self.rect.top < 0:
             self.rect.top = 0
-        # If game end
+
+        # If run end
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             self.keep_moving = False
             show_menu = True
             game_running = False
-
             all_speed = 0
+
             # update landing range stat
             self.final_range = self.rect.left
-
             # find amt of gas used in attempt
             self.gas_used = 100 - self.gas
 
@@ -121,8 +118,7 @@ class Plane(pygame.sprite.Sprite):
             run_data = [self.final_range, self.max_height, self.gas_used, self.fuel_effeciency, time]
             main_db.append(run_data)
 
-            # clear all sprite groups
-            cloud_group.empty()
+            # clear powerup sprite groups
             booster_group.empty()
             fuel_group.empty()
             star_group.empty()
@@ -132,8 +128,6 @@ class Plane(pygame.sprite.Sprite):
             if self.gas > 0:
                 GRAVITY_TIMER = 20
             self.boost(time)
-        # if holding right arrow, speed up
-        if keystatus[K_RIGHT] == True: self.speed_up(time)
 
         # Collision detection with fuel objects
         fuel_collisions = pygame.sprite.spritecollide(self, fuel_group, True)
@@ -144,7 +138,7 @@ class Plane(pygame.sprite.Sprite):
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
         for booster in booster_collisions:
             self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
-            #GRAVITY_TIMER = 0
+            GRAVITY_TIMER = 0
             all_speed -= 3
             self.boost_const += 1.5
             cloud_spawn_rate += 800
@@ -152,18 +146,11 @@ class Plane(pygame.sprite.Sprite):
     
     def boost(self, time):
         time -= 1
-        '''add some height to the plane as a userevent triggered boost'''
+        '''add some height to the plane as a userevent triggered boost by K_SPACE'''
         if self.gas <= 0: return
         if not self.keep_moving: return
         self.rect.y -= self.boost_const*self.velocity_y + 2
         self.gas -= self.fuel_effeciency
-    
-    def speed_up(self, time):
-        '''convert some of the plane's vertical velocity into horizontal velocity'''
-        if not self.keep_moving: return
-        if self.nitrous <= 0: return
-        self.rect.x += 1.6*self.velocity_x
-        self.rect.y += 1.6*self.velocity_y
 
 class Star(pygame.sprite.Sprite):
     def __init__ (self, spawn_x_range_start):
@@ -185,6 +172,8 @@ class Booster(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x += self.x_velocity
+        if self.rect.right < 0:
+            self.kill()
     
 class Fuel(pygame.sprite.Sprite):
     def __init__(self, x_velocity, spawn_x_range_start):
@@ -196,22 +185,24 @@ class Fuel(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x += self.x_velocity
+        if self.rect.right < 0:
+            self.kill()
     
 class Cloud(pygame.sprite.Sprite):
-    def __init__(self, x_velocity):
+    def __init__(self, x_velocity, x = randint(SCREEN_WIDTH, SCREEN_WIDTH*2), y = None):
         pygame.sprite.Sprite.__init__(self)
         self.v_x = x_velocity
         self.image = pygame.image.load('cloud_medium.png')
         self.size = randint(100,250)
         self.image = pygame.transform.scale(self.image, (self.size,self.size))
-        #self.image.fill(OFF_WHITE)
-        self.rect = self.image.get_rect(center = (SCREEN_WIDTH+1000, randint(0, SCREEN_HEIGHT))) #spawn anywhere in the game environment (randint(0,SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
+        if not y:
+            y = randint(0, SCREEN_HEIGHT-130)
+        self.rect = self.image.get_rect(center = (x, y))
         
     def update(self):
         self.rect.x += self.v_x
-        #if self.rect.left > SCREEN_WIDTH:
-            #self.kill
-        #only remove once they move off-screen TO THE LEFT!!!
+        if self.rect.right < 0:
+            self.kill()
 
 # || EVENTS ||
 
@@ -223,8 +214,6 @@ pygame.time.set_timer(ADD_BOOSTER, 3000)
 
 ADD_CLOUD = pygame.USEREVENT + 15
 pygame.time.set_timer(ADD_CLOUD, 1000)
-
-# || ELEMENTS ||
 
 # || TEXT/MENU ELEMENTS ||
 
@@ -242,16 +231,16 @@ D_Save_and_Quit = font.render('[4] Save and Quit', True, (255, 255, 255))
 Logo = pygame.image.load('highflyer logo.png')
 Logo = pygame.transform.scale(Logo, (3774/8,2391/8))
 
-# || SPRITE GROUPS ||
-
-main_plane = Plane()
+# || SPRITES GROUPS ||
 
 plane_group = pygame.sprite.Group()
-plane_group.add(main_plane)
 cloud_group = pygame.sprite.Group()
 booster_group = pygame.sprite.Group()
 fuel_group = pygame.sprite.Group()
 star_group = pygame.sprite.Group()
+
+main_plane = Plane()
+plane_group.add(main_plane)
 
 # || GAME WINDOW/LOOP ||
 
@@ -259,7 +248,7 @@ running = True
 dt = 0
 
 runs = 0
-time = 0
+time = 0 # unit: screen refreshes
 while running:
     if running == False:
         break
@@ -297,13 +286,14 @@ while running:
                 show_instructions = False
                 # clear all sprite groups
                 plane_group.empty()
+                cloud_group.empty()
                 # add new plane for next run
                 main_plane = Plane()
                 plane_group.add(main_plane)
-                # # create new clouds
-                # for x in range(0,20):
-                #     new_cloud = Cloud(all_speed)
-                #     cloud_group.add(new_cloud)
+                # create initial on-screen clouds
+                for x in range(0,3):
+                    new_cloud = Cloud(all_speed, randint(0, SCREEN_WIDTH))
+                    cloud_group.add(new_cloud)
                 # indicate first run completed
                 if first_run:
                     first_run = False
@@ -365,6 +355,9 @@ while running:
         window.blit(D_Save_and_Quit, (20, 130))
         if first_run:
             window.blit(Logo, (SCREEN_WIDTH/2-100,SCREEN_HEIGHT/2-100))
+        else:
+            # display stats from last run
+            pass
 
     if not show_menu:
         gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
