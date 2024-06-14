@@ -224,7 +224,7 @@ pygame.time.set_timer(ADD_CLOUD, 1000)
 
 # || TEXT/MENU ELEMENTS ||
 
-game_instructions = ["INSTRUCTIONS", "Press [SPACE] to boost up", "Press [RIGHT ARROW] to speed up"]
+game_instructions = ["INSTRUCTIONS", "Press [SPACE] to climb", "Claim fuel to keep going", "Avoid the ground", "Boosters raise your speed"]
 upgrades_menu = ["UPGRADES", "1. Fuel Efficiency + 10%", "More in future versions", "Upon further investment"]
 
 font = pygame.font.Font('Toyota-Type.ttf', 36)
@@ -329,20 +329,6 @@ while running:
         fuel_group.draw(window)
         star_group.update()
         star_group.draw(window)
-        
-    if show_instructions:
-        for i in range(len(game_instructions)):
-            instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
-            window.blit(instruction, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
-            
-    if show_upgrades_menu:
-        for i in range(len(upgrades_menu)):
-            upgrade = font_small.render(upgrades_menu[i], True, (255, 255, 255))
-            window.blit(upgrade, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
-        # check for event to upgrade fuel efficiency
-        if keyPressed[K_1]:
-            main_plane.fuel_effeciency -= 0.1
-            show_upgrades_menu = False
 
     if show_menu:
         time -= 1
@@ -368,12 +354,24 @@ while running:
             window.blit(time_elapsed, (20, 440))
 
     if not show_menu:
-        gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
-        window.blit(gas_level_indicator, (20, 410))
-        nitrous_level_indicator = font.render('Nitrous Remaining: ' + str(main_plane.nitrous) + '%', True, (255, 255, 255))
-        window.blit(nitrous_level_indicator, (20, 450))
         runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
-        window.blit(runs_indicator, (20, 370))
+        window.blit(runs_indicator, (20, 410))
+        gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
+        window.blit(gas_level_indicator, (20, 450))
+    
+    if show_instructions:
+        for i in range(len(game_instructions)):
+            instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
+            window.blit(instruction, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+            
+    if show_upgrades_menu:
+        for i in range(len(upgrades_menu)):
+            upgrade = font_small.render(upgrades_menu[i], True, (255, 255, 255))
+            window.blit(upgrade, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+        # check for event to upgrade fuel efficiency
+        if keyPressed[K_1]:
+            main_plane.fuel_effeciency -= 0.1
+            show_upgrades_menu = False
 
     pygame.display.flip()
     dt = clock.tick(FPS)/1750
