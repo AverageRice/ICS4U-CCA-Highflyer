@@ -63,7 +63,7 @@ class Plane(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (75,75))
 
         self.rect = self.image.get_rect()
-        self.rect.center = (SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2)
+        self.rect.center = (SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2)
 
         self.keep_moving = True
         self.gas = 100
@@ -124,9 +124,8 @@ class Plane(pygame.sprite.Sprite):
             star_group.empty()
         
         # if holding space, boost up
-        if keystatus[K_SPACE] == True: 
-            if self.gas > 0:
-                GRAVITY_TIMER = 20
+        if keystatus[K_SPACE]:
+            if self.gas > 0: GRAVITY_TIMER = 20
             self.boost(time)
 
         # Collision detection with fuel objects
@@ -137,7 +136,7 @@ class Plane(pygame.sprite.Sprite):
         # Collision detection with booster objects
         booster_collisions = pygame.sprite.spritecollide(self, booster_group, True)
         for booster in booster_collisions:
-            self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
+            # self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
             GRAVITY_TIMER = 0
             all_speed -= 3
             self.boost_const += 1.5
@@ -199,7 +198,8 @@ class Cloud(pygame.sprite.Sprite):
             y = randint(0, SCREEN_HEIGHT-130)
         self.rect = self.image.get_rect(center = (x, y))
         
-    def update(self):
+    def update(self, is_running = True):
+        if not is_running: return
         self.rect.x += self.v_x
         if self.rect.right < 0:
             self.kill()
@@ -265,6 +265,11 @@ while running:
 
     window.fill(SKY_BLUE)
 
+    cloud_group.update(game_running)
+    cloud_group.draw(window)
+    plane_group.update(time, keyPressed, game_running)
+    plane_group.draw(window)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -318,10 +323,6 @@ while running:
         break
 
     if game_running:
-        cloud_group.update()
-        cloud_group.draw(window)
-        plane_group.update(time, keyPressed, game_running)
-        plane_group.draw(window)
         booster_group.update()
         booster_group.draw(window)
         fuel_group.update()
