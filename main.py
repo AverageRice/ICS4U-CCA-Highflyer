@@ -384,7 +384,7 @@ for i in range(len(main_db)):
     if main_db[i] not in DB:
         DB.append(main_db[i])
 # save main_db to a CSV file
-with open('data.csv', 'w') as f:
+with open('data.csv', 'a') as f:
     for i in range(len(DB)):
         write = str(DB[i])
         f.write(write[1:-1] + '\n')
