@@ -138,9 +138,9 @@ class Plane(pygame.sprite.Sprite):
         for booster in booster_collisions:
             # self.rect.x += 2.5*self.velocity_x # booster not working rn, fix later
             GRAVITY_TIMER = 0
-            all_speed -= 3
-            self.boost_const += 1.5
-            cloud_spawn_rate += 1000
+            all_speed -= 2
+            self.boost_const += 1.7
+            cloud_spawn_rate += 1200
             booster_group.remove(booster)
     
     def boost(self, time):
@@ -333,7 +333,7 @@ while running:
         # indicators
         runs_indicator = font.render('Runs: ' + str(runs), True, (255, 255, 255))
         window.blit(runs_indicator, (20, 410))
-        gas_level_indicator = font.render('Fuel Remaining: ' + str(main_plane.gas) + '%', True, (255, 255, 255))
+        gas_level_indicator = font.render('Fuel Remaining: ' + str(round(main_plane.gas)) + '%', True, (255, 255, 255))
         window.blit(gas_level_indicator, (20, 450))
         # show distance travelled by plane so far in the bottom right of the screen
         distance_travelled = font.render('Distance: ' + str(main_plane.final_range) + 'm', True, (255, 255, 255))
@@ -368,12 +368,12 @@ while running:
     if show_instructions:
         for i in range(len(game_instructions)):
             instruction = font_small.render(game_instructions[i], True, (255, 255, 255))
-            window.blit(instruction, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+            window.blit(instruction, (800, 30 + 30*i))
             
     if show_upgrades_menu:
         for i in range(len(upgrades_menu)):
             upgrade = font_small.render(upgrades_menu[i], True, (255, 255, 255))
-            window.blit(upgrade, (SCREEN_WIDTH / 2 - 170, 160 + 30*i))
+            window.blit(upgrade, (800, 30 + 30*i))
         # check for event to upgrade fuel efficiency
         if keyPressed[K_1]:
             main_plane.fuel_effeciency -= 0.1
@@ -394,9 +394,7 @@ with open('data.csv', 'a') as f:
     for i in range(len(DB)):
         write = str(DB[i])
         f.write(write[1:-1] + '\n')
-# Clean up
 
 # || ENDING PROGRAM ||
-
 pygame.quit()
 sys.exit()
