@@ -318,6 +318,9 @@ while running:
                 pygame.quit()
                 running = False
                 break
+            if event.key == pygame.K_ESCAPE: # pause game
+                game_running = not game_running
+                show_menu = not show_menu
         if game_running:
             if event.type == ADD_FUEL:
                 new_fuel = Fuel(all_speed)
