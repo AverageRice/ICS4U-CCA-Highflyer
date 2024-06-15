@@ -123,10 +123,10 @@ class Plane(pygame.sprite.Sprite):
             fuel_group.empty()
             star_group.empty()
         
-        # if holding space, boost up
+        # if holding space, climb altitude
         if keystatus[K_SPACE]:
             if self.gas > 0: GRAVITY_TIMER = 20
-            self.boost(time)
+            self.climb(time)
 
         # Collision detection with fuel objects
         fuel_collisions = pygame.sprite.spritecollide(self, fuel_group, True)
@@ -142,24 +142,32 @@ class Plane(pygame.sprite.Sprite):
             self.boost_const += 1.7
             cloud_spawn_rate += 1200
             booster_group.remove(booster)
-    
-    def boost(self, time):
+        # Collision detection with star objects
+        star_collisions = pygame.sprite.spritecollide(self, star_group, True)
+        for star in star_collisions:
+            self.gas += 5
+            star_group.remove(star)
+
+    def climb(self, time):
         time -= 1
-        '''add some height to the plane as a userevent triggered boost by K_SPACE'''
+        '''add some height to the plane as a userevent trigger K_SPACE'''
         if self.gas <= 0: return
         if not self.keep_moving: return
         self.rect.y -= self.boost_const*self.velocity_y + 2
         self.gas -= self.fuel_effeciency
 
 class Star(pygame.sprite.Sprite):
-    def __init__ (self, spawn_x_range_start):
+    def __init__ (self, x_velocity):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('star.png')
         self.image = pygame.transform.scale(self.image, (15,15))
-        self.rect = self.image.get_rect(center = (randint(spawn_x_range_start,SCREEN_WIDTH+1000), randint(0, SCREEN_HEIGHT)))
+        self.rect = self.image.get_rect(center = (SCREEN_WIDTH+1000, randint(0, SCREEN_HEIGHT)))
+        self.x_velocity = x_velocity
 
     def update(self):
-        self.rect = self.rect
+        self.rect.x += self.x_velocity
+        if self.rect.right < 0:
+            self.kill()
 
 class Booster(pygame.sprite.Sprite):
     def __init__(self, x_velocity):
@@ -221,6 +229,9 @@ pygame.time.set_timer(ADD_BOOSTER, 3000)
 
 ADD_CLOUD = pygame.USEREVENT + 15
 pygame.time.set_timer(ADD_CLOUD, 1000)
+
+ADD_STAR = pygame.USEREVENT + 16
+pygame.time.set_timer(ADD_STAR, 1000)
 
 # || TEXT/MENU ELEMENTS ||
 
@@ -317,6 +328,9 @@ while running:
             if event.type == ADD_CLOUD:
                 new_cloud = Cloud(all_speed)
                 cloud_group.add(new_cloud)
+            if event.type == ADD_STAR:
+                new_star = Star(all_speed)
+                star_group.add(new_star)
 
     # break the game loop if the player save and quit
     if not running: 
