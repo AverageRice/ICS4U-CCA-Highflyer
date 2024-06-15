@@ -1,3 +1,9 @@
+# || RUNTIME REQUIREMENTS ||
+'''
+- Python 3.7 Minimum
+- Pygame 1.9.6 Minimum
+- Jupyter Notebook (for data analysis)
+'''
 # || IMPORT STATEMENTS ||
 
 import pygame, sys
